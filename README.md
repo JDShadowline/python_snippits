@@ -5,18 +5,22 @@
 ### Python Library Reference
 #### Pandas
 >Installation:
+>
 >       pip install pandas
 >
 >Import/Usage:
+>
 >       import pandas as pd
 >
 >[Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
 
 #### PySimpleGUI
 >Installation:
+>
 >       pip install pysimplegui
 >
 >Import/Usage:
+>
 >       import PySimpleGUI as sg
 >
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
@@ -26,7 +30,6 @@
 >       pip install lovely-logger
 >
 >Import/Usage:
->       import lovely_logger as log
 >
 >       import lovely_logger as log
 >
@@ -42,11 +45,37 @@
 
 #### Alive Progressbar
 >Installation:
+>
 >       pip install alive-progress
 >
 >Import/Usage:
+>
 >       from alive_progress.styles import showtime  # Use showtime() to create a demo
 >       from alive_progress import alive_bar        # Regular import
 >       from alive_progress import alive_it         # Auto iterating import
 >
 >[Link to Documentation](https://github.com/rsalmei/alive-progress)
+
+#### Selenium
+>Installation:
+>
+>       pip install selenium
+>
+>>Webdrivers:
+>>[Chrome: https://sites.google.com/chromium.org/driver/](https://sites.google.com/chromium.org/driver/)
+>>[Firefox: https://github.com/mozilla/geckodriver/releases](https://github.com/mozilla/geckodriver/releases)
+>>[Edge: https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
+>>[Safari: https://webkit.org/blog/6900/webdriver-support-in-safari-10/](https://webkit.org/blog/6900/webdriver-support-in-safari-10/)
+>
+>Import/Usage:
+>
+>>      from selenium import webdriver
+>>      from selenium.webdriver.common.by import By
+>>      from selenium.webdriver.common.keys import Keys
+>>      from selenium.webdriver.support.ui import WebDriverWait
+>>      from selenium.webdriver.support import expected_conditions as EC
+>>      from selenium.webdriver.chrome.service import Service
+>>      from selenium.webdriver.chrome.options import Options
+>>      from selenium.webdriver.support.ui import Select
+>
+>[Link to Documentation](https://selenium-python.readthedocs.io/)
