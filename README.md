@@ -4,6 +4,7 @@
 
 ### Python Library Reference
 #### Pandas
+_Pandas is a fast, powerful, flexible and easy to use open source data analysis and manipulation tool, built on top of the Python programming language._
 >Installation:
 >
 >       pip install pandas
@@ -15,6 +16,7 @@
 >[Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
 
 #### PySimpleGUI
+_Python GUI For Humans - Transforms tkinter, Qt, Remi, WxPython into portable people-friendly Pythonic interfaces_
 >Installation:
 >
 >       pip install pysimplegui
@@ -26,6 +28,7 @@
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
 
 #### Lovely Logger
+_A logger library which builds on, combines, and simplifies various logging features of Python 3_
 >Installation:
 >       pip install lovely-logger
 >
@@ -44,6 +47,7 @@
 >[Link to Documentation](https://github.com/tier2tickets/lovely-logger)
 
 #### Alive Progressbar
+_A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!_
 >Installation:
 >
 >       pip install alive-progress
@@ -56,15 +60,16 @@
 >
 >[Link to Documentation](https://github.com/rsalmei/alive-progress)
 
-#### Selenium
+#### Selenium (python)
+_The selenium package is used to automate web browser interaction from Python._
 >Installation:
 >
 >       pip install selenium
 >
->>Webdrivers:
->>[Chrome: https://sites.google.com/chromium.org/driver/](https://sites.google.com/chromium.org/driver/)
->>[Firefox: https://github.com/mozilla/geckodriver/releases](https://github.com/mozilla/geckodriver/releases)
->>[Edge: https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)
+>>Webdrivers:\
+>>[Chrome: https://sites.google.com/chromium.org/driver/](https://sites.google.com/chromium.org/driver/)\
+>>[Firefox: https://github.com/mozilla/geckodriver/releases](https://github.com/mozilla/geckodriver/releases)\
+>>[Edge: https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/](https://developer.microsoft.com/en-us/microsoft-edge/tools/webdriver/)\
 >>[Safari: https://webkit.org/blog/6900/webdriver-support-in-safari-10/](https://webkit.org/blog/6900/webdriver-support-in-safari-10/)
 >
 >Import/Usage:
