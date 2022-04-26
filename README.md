@@ -12,16 +12,21 @@
 
 * PySimpleGUI
 >Installation:\
->```pip install pysimplegui```\
->Import/Usage:\
->```import PySimpleGUI as sg```\
+>```pip install pysimplegui```
+>
+>Import/Usage:
+>
+>```import PySimpleGUI as sg```
+>
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
 
 * Lovely Logger
 >Installation:\
->```pip install lovely-logger```\
->Import/Usage:\
->```import lovely_logger as log```\
+>```pip install lovely-logger```
+>
+>Import/Usage:
+>
+>```import lovely_logger as log```
 >
 >       import lovely_logger as log
 >
