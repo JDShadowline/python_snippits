@@ -1,6 +1,13 @@
 # python_snippits
 ### Random assortment of helpful python snippits
+#### [/src/credentials](https://github.com/JDShadowline/python_snippits/tree/main/src/credentials)
+_Tools for creating and saving hashed credentials for re-using in scripts_
 
+#### [/src/script_performance_monitor](https://github.com/JDShadowline/python_snippits/tree/main/src/script_performance_monitor)
+_Simple script performance monitoring/time output_
+
+#### [/src/config_writer](https://github.com/JDShadowline/python_snippits/tree/main/src/config_writer)
+_Config file reader and writer_
 
 ## Python Library Reference
 ### Pandas
@@ -74,13 +81,13 @@ _The selenium package is used to automate web browser interaction from Python._
 >
 >Import/Usage:
 >
->>      from selenium import webdriver
->>      from selenium.webdriver.common.by import By
->>      from selenium.webdriver.common.keys import Keys
->>      from selenium.webdriver.support.ui import WebDriverWait
->>      from selenium.webdriver.support import expected_conditions as EC
->>      from selenium.webdriver.chrome.service import Service
->>      from selenium.webdriver.chrome.options import Options
->>      from selenium.webdriver.support.ui import Select
+>      from selenium import webdriver
+>      from selenium.webdriver.common.by import By
+>      from selenium.webdriver.common.keys import Keys
+>      from selenium.webdriver.support.ui import WebDriverWait
+>      from selenium.webdriver.support import expected_conditions as EC
+>      from selenium.webdriver.chrome.service import Service
+>      from selenium.webdriver.chrome.options import Options
+>      from selenium.webdriver.support.ui import Select
 >
 >[Link to Documentation](https://selenium-python.readthedocs.io/)

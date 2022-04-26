@@ -1,5 +1,5 @@
 # Python script time logging
-_Performance monitor for scirpt timing_
+_Performance monitor for script timing_
 
 >Usage:
 >       
