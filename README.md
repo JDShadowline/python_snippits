@@ -2,30 +2,30 @@
 ### Randomized assortment of helpful python snippits
 
 
-##### Python Library Reference
-* Pandas
+### Python Library Reference
+####* Pandas
 >Installation:\
->```pip install pandas```\
+>```pip install pandas```
+>
 >Import/Usage:\
->```import pandas as pd```\
+>```import pandas as pd```
+>
 >[Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
 
-* PySimpleGUI
+####* PySimpleGUI
 >Installation:\
 >```pip install pysimplegui```
 >
->Import/Usage:
->
+>Import/Usage:\
 >```import PySimpleGUI as sg```
 >
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
 
-* Lovely Logger
+####* Lovely Logger
 >Installation:\
 >```pip install lovely-logger```
 >
->Import/Usage:
->
+>Import/Usage:\
 >```import lovely_logger as log```
 >
 >       import lovely_logger as log
