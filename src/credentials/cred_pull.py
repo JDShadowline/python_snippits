@@ -7,7 +7,7 @@
 #
 #
 ###### IMPORTS ######
-# from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet
 import os, time
 import easygui as eg
 
