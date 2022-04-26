@@ -1,9 +1,9 @@
 # python_snippits
-### Randomized assortment of helpful python snippits
+### Random assortment of helpful python snippits
 
 
-### Python Library Reference
-#### Pandas
+## Python Library Reference
+### Pandas
 _Pandas is a fast, powerful, flexible and easy to use open source data analysis and manipulation tool, built on top of the Python programming language._
 >Installation:
 >
@@ -15,7 +15,7 @@ _Pandas is a fast, powerful, flexible and easy to use open source data analysis 
 >
 >[Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
 
-#### PySimpleGUI
+### PySimpleGUI
 _Python GUI For Humans - Transforms tkinter, Qt, Remi, WxPython into portable people-friendly Pythonic interfaces_
 >Installation:
 >
@@ -27,7 +27,7 @@ _Python GUI For Humans - Transforms tkinter, Qt, Remi, WxPython into portable pe
 >
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
 
-#### Lovely Logger
+### Lovely Logger
 _A logger library which builds on, combines, and simplifies various logging features of Python 3_
 >Installation:
 >       pip install lovely-logger
@@ -46,7 +46,7 @@ _A logger library which builds on, combines, and simplifies various logging feat
 >
 >[Link to Documentation](https://github.com/tier2tickets/lovely-logger)
 
-#### Alive Progressbar
+### Alive Progressbar
 _A new kind of Progress Bar, with real-time throughput, ETA, and very cool animations!_
 >Installation:
 >
@@ -60,7 +60,7 @@ _A new kind of Progress Bar, with real-time throughput, ETA, and very cool anima
 >
 >[Link to Documentation](https://github.com/rsalmei/alive-progress)
 
-#### Selenium (python)
+### Selenium (python)
 _The selenium package is used to automate web browser interaction from Python._
 >Installation:
 >
