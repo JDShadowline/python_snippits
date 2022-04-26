@@ -2,17 +2,17 @@
 ### Randomized assortment of helpful python snippits
 
 
-##### Python Librarys
-* Pandas
-    Installation:
-        ```pip install pandas```
-    Import/Usage:
-        ```import pandas as pd```
-    [Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
+##### Python Libraries
+* Pandas<br>
+    Installation:<br>
+        ```pip install pandas```<br>
+    Import/Usage:<br>
+        ```import pandas as pd```<br>
+    [Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)<br>
 
-* Pandas
-    Installation:
-        ```pip install pysimplegui```
-    Import/Usage:
-        ```import PySimpleGUI as sg```
-    [Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
+* Pandas<br>
+    Installation:<br>
+        ```pip install pysimplegui```<Br>
+    Import/Usage:<br>
+        ```import PySimpleGUI as sg```<Br>
+    [Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)<br>
