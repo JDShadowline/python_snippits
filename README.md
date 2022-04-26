@@ -3,30 +3,30 @@
 
 
 ### Python Library Reference
-####* Pandas
->Installation:\
->```pip install pandas```
+#### Pandas
+>Installation:
+>       pip install pandas
 >
->Import/Usage:\
->```import pandas as pd```
+>Import/Usage:
+>       import pandas as pd
 >
 >[Link to Documentation](https://pandas.pydata.org/docs/reference/index.html#api)
 
-####* PySimpleGUI
->Installation:\
->```pip install pysimplegui```
+#### PySimpleGUI
+>Installation:
+>       pip install pysimplegui
 >
->Import/Usage:\
->```import PySimpleGUI as sg```
+>Import/Usage:
+>       import PySimpleGUI as sg
 >
 >[Link to Documentation](https://pysimplegui.readthedocs.io/en/latest/call%20reference/)
 
-####* Lovely Logger
->Installation:\
->```pip install lovely-logger```
+#### Lovely Logger
+>Installation:
+>       pip install lovely-logger
 >
->Import/Usage:\
->```import lovely_logger as log```
+>Import/Usage:
+>       import lovely_logger as log
 >
 >       import lovely_logger as log
 >
@@ -39,3 +39,14 @@
 >       log.critical('generally you would use critical for uncaught exceptions')
 >
 >[Link to Documentation](https://github.com/tier2tickets/lovely-logger)
+
+#### Alive Progressbar
+>Installation:
+>       pip install alive-progress
+>
+>Import/Usage:
+>       from alive_progress.styles import showtime  # Use showtime() to create a demo
+>       from alive_progress import alive_bar        # Regular import
+>       from alive_progress import alive_it         # Auto iterating import
+>
+>[Link to Documentation](https://github.com/rsalmei/alive-progress)
