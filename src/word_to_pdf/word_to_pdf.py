@@ -27,6 +27,8 @@ import easygui as eg
 import PySimpleGUI as sg
 import threading
 
+import pythoncom # For COM threading fix
+
 #################
 # Global Variables
 #####################
@@ -42,7 +44,9 @@ except:
 watermark_file = "watermark.pdf"
 default_watermark_path = pathlib.Path(os.path.join(home_path, watermark_file))
 if os.path.exists(default_watermark_path):
-    watermark_file = default_watermark_path.name
+    watermark_file = default_watermark_path
+else:
+    watermark_file = None
 #################
 # GUI/Layout
 #####################
@@ -60,7 +64,7 @@ def main_window(theme):
         [sg.Text('Input:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_input-', ''),key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.FolderBrowse('Browse', key='-batch-input-browse-',initial_folder=sg.user_settings_get_entry('-dir_input-', '') , size=(10,1))],
         [sg.Text('Output:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_output-', ''), key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.FolderBrowse('Browse', key='-batch-output-browse-',initial_folder=sg.user_settings_get_entry('-dir_output-', '') , size=(10,1))],
         [sg.Checkbox('Watermark', key='-watermark-', enable_events=True, size=(10,1)), sg.Input(default_text=watermark_file,key='-watermark-input-',disabled=True,disabled_readonly_background_color = 'dim gray', size=(60,1),expand_x=True), sg.FileBrowse("Browse",file_types=(('PDF', '*.pdf'),), key='-watermark-browse-',disabled=True, size=(10,1))],
-        [sg.Text('')],
+        [sg.ProgressBar(100, orientation='h', key='-progress-',visible=False, size=(40,20), bar_color=('white', 'grey17'), border_width=0,expand_x=True)],
         [sg.Button('Start Batch', size=(10,2), key='-batch-start-',bind_return_key=True, expand_x=True)],
 
         ]
@@ -86,18 +90,33 @@ def main_window(theme):
 # Classes/Functions
 #####################
 
-def convert_batch(window,values, input_path, output_path, watermark):
+def convert_batch(window,values, watermark):
+    
+    
+    pythoncom.CoInitialize() # Threading COM fix
+    input_path = values['-batch-input-']
+    output_path = values['-batch-output-']
     window['-batch-'].update('') ## Clear output
     docxfiles, pdffiles, outputfiles, existingfiles = check_folders(window, values, input_path, output_path)
-        
+    
     if len(docxfiles) > 0:
-        for file in docxfiles:
+        window['-progress-'].update(len(docxfiles), visible=True)
+        for i, file in enumerate(docxfiles):
             if file.name not in outputfiles: # if the file is not in the output directory
+                
+                # window['-batch-'].update('Converting '+file.name+' to PDF', append=True)
+                # sg.cprint('Converting '+file.name+' to PDF', text_color='yellow', key='-batch-')
                 convert(file, output_path)
+                
                 if watermark:
                     outfile = os.path.join(output_path, file.name.replace('.docx','.pdf'))
                     watermarker(window, values, outfile, output_path)
-                window['-batch-'].update('Converted '+file.name+' to PDF\n', append=True)
+                    sg.cprint(f'Converted and watermarked: {file.name} to PDF. File {i+1} of {len(docxfiles)}', text_color='white', key='-batch-',justification='c',)
+                else:
+                    sg.cprint(f'Converted: {file.name} to PDF. File {i+1} of {len(docxfiles)}', text_color='yellow', key='-batch-',justification='c',)
+                window['-progress-'].update_bar(i+1, len(docxfiles))
+                # window['-batch-'].update('Converted '+file.name+' to PDF\n', append=True)
+                
     if len(pdffiles) > 0:
         if not watermark:
             sg.popup('PDF files selected without watermark option. Please select watermark option.')
@@ -107,6 +126,7 @@ def convert_batch(window,values, input_path, output_path, watermark):
                     outfile = os.path.join(output_path, file.name.replace('.pdf','.pdf'))
                     watermarker(window, values, outfile, output_path)
                     window['-batch-'].update('Watermarked '+file.name+'\n', append=True)
+    sg.cprint('==== Finished! ====', text_color='green', key='-batch-',justification='c')
 
 def check_folders(window, values, input_path=None, output_path=None):
     docxfiles       = []
@@ -132,7 +152,7 @@ def check_folders(window, values, input_path=None, output_path=None):
         for file in allfiles:
             if file.stem in outputfiles:
                 existingfiles.append(file.stem)
-        window['-batch-'].update(f"The following files already exist in the output directory\n{existingfiles}\n", append=True)
+        sg.cprint(f"The following files already exist in the output directory\n{existingfiles}\n", text_color='orange', key='-batch-')
     
     return docxfiles, pdffiles, outputfiles, existingfiles
         
@@ -141,7 +161,7 @@ def watermarker(window, values, file_path, output_path):
     pathfile = pathlib.Path(file_path).resolve()
     print(pathfile.name, pathfile.stem, pathfile)
     base_pdf = PdfReader(file_path)
-    watermark_pdf = PdfReader(values['-watermark-file-'])
+    watermark_pdf = PdfReader(values['-watermark-input-'])
     mark = watermark_pdf.pages[0]
     
     for page in range(len(base_pdf.pages)):
@@ -167,12 +187,12 @@ def main():
         event, values = window.read(timeout=100)
         
         if event == '-batch-start-':
-            
+            sg.cprint_set_output_destination(window, '-batch-')
             if not values['-batch-input-'] or not values['-batch-output-']:
                 sg.popup('Please select input and output folders')
             else:
                 print('batch start')
-                # threading.Thread(target=convert_batch, args=([window,values, inputf, outputf, watermarked]), daemon=True).start()
+                threading.Thread(target=convert_batch, args=([window,values,watermarked]), daemon=True).start()
             
         elif event == '-watermark-':
             watermarked = not watermarked
