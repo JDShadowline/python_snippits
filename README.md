@@ -9,7 +9,7 @@ _Simple script performance monitoring/time output_
 #### [/src/config_writer](https://github.com/JDShadowline/python_snippits/tree/main/src/config_writer)
 _Config file reader and writer_
 
-## Python Library Reference
+## Python Library References
 ### Pandas
 _Pandas is a fast, powerful, flexible and easy to use open source data analysis and manipulation tool, built on top of the Python programming language._
 >Installation:
