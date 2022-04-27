@@ -57,9 +57,9 @@ def main_window(theme):
     page_batch = [
         [sg.Text('Batch')],
         [sg.Multiline(autoscroll=True,size=(80,20), key='-batch-', expand_x=True, auto_refresh=True,write_only=True)],
-        [sg.Text('Input:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_input-', ''),key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-input-browse-', size=(10,1))],
-        [sg.Text('Output:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_output-', ''), key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-output-browse-', size=(10,1))],
-        [sg.Checkbox('Watermark', key='-watermark-', enable_events=True, size=(10,1)), sg.Input(default_text=watermark_file,key='-watermark-input-',disabled=True,disabled_readonly_background_color = 'dim gray', size=(60,1),expand_x=True), sg.Button('Browse', key='-watermark-browse-',disabled=True, size=(10,1))],
+        [sg.Text('Input:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_input-', ''),key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.FolderBrowse('Browse', key='-batch-input-browse-',initial_folder=sg.user_settings_get_entry('-dir_input-', '') , size=(10,1))],
+        [sg.Text('Output:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_output-', ''), key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.FolderBrowse('Browse', key='-batch-output-browse-',initial_folder=sg.user_settings_get_entry('-dir_output-', '') , size=(10,1))],
+        [sg.Checkbox('Watermark', key='-watermark-', enable_events=True, size=(10,1)), sg.Input(default_text=watermark_file,key='-watermark-input-',disabled=True,disabled_readonly_background_color = 'dim gray', size=(60,1),expand_x=True), sg.FileBrowse("Browse",file_types=(('PDF', '*.pdf'),), key='-watermark-browse-',disabled=True, size=(10,1))],
         [sg.Text('')],
         [sg.Button('Start Batch', size=(10,2), key='-batch-start-',bind_return_key=True, expand_x=True)],
 
@@ -71,7 +71,7 @@ def main_window(theme):
 
     layout += [
         [sg.TabGroup([[sg.Tab('Home', page_main),sg.Tab('Batch Process', page_batch), sg.Tab('Single File', page_single)]], enable_events=False, key='-tab-group-')],
-        [sg.StatusBar(text='', key='-status-', size=(80,1), text_color='white', background_color='grey13', relief=sg.RELIEF_SUNKEN, expand_x=True, justification='center')],
+        [sg.StatusBar(text='', key='-status-', size=(80,1), text_color='white', background_color='grey17', relief=sg.RELIEF_SUNKEN, expand_x=True, justification='center')],
         ]
     window = sg.Window('DOCX to PDF file converter', layout, grab_anywhere=False, resizable=True, margins=(0, 0), use_custom_titlebar=True, finalize=True, keep_on_top=False,
                         enable_close_attempted_event=True, 
@@ -113,7 +113,7 @@ def check_folders(window, values, input_path=None, output_path=None):
     pdffiles        = []
     allfiles        = []
     outputfiles     = []
-    existing_files  = []
+    existingfiles  = []
     if input_path and output_path:
         for file in pathlib.Path(input_path).glob(f'**/*.docx'):
             docxfiles.append(file)
@@ -131,8 +131,8 @@ def check_folders(window, values, input_path=None, output_path=None):
         
         for file in allfiles:
             if file.stem in outputfiles:
-                existing_files.append(file.stem)
-        window['-batch-'].update(f"The following files already exist in the output directory\n{existing_files}\n", append=True)
+                existingfiles.append(file.stem)
+        window['-batch-'].update(f"The following files already exist in the output directory\n{existingfiles}\n", append=True)
     
     return docxfiles, pdffiles, outputfiles, existingfiles
         
@@ -162,38 +162,17 @@ def watermarker(window, values, file_path, output_path):
 def main():
     window = main_window(sg.theme()) ## Create the main window and set the theme externally
     watermarked = False ## Boolean to check if watermark has been applied
-    inputf=''
-    outputf=''
-    watermarkf = ''
     
-
     while True:
         event, values = window.read(timeout=100)
         
         if event == '-batch-start-':
-            if not inputf or not outputf:
+            
+            if not values['-batch-input-'] or not values['-batch-output-']:
                 sg.popup('Please select input and output folders')
             else:
                 print('batch start')
-                # convert_batch(window,values, inputf, outputf, watermarked)
-                threading.Thread(target=convert_batch, args=([window,values, inputf, outputf, watermarked]), daemon=True).start()
-            # window['-batch-'].update('String'+'\n', append=True)  #values['word']
-        elif event == '-batch-input-browse-':
-            print('batch browse')
-            inputf = values['-batch-in-folder-'] = sg.popup_get_folder('Please select folder')
-            window['-batch-input-'].update(values['-batch-in-folder-'])
-            threading.Thread(target=check_folders, args=(window, values, inputf, outputf), daemon=True).start()
-            
-        elif event == '-batch-output-browse-':
-            print('batch browse')
-            outputf = values['-batch-out-folder-'] = sg.popup_get_folder('Please select folder')
-            window['-batch-output-'].update(values['-batch-out-folder-'])
-            threading.Thread(target=check_folders, args=(window, values, inputf, outputf), daemon=True).start()
-            
-        elif event == '-watermark-browse-':
-            print('watermark browse')
-            watermarkf = values['-watermark-file-'] = sg.popup_get_file('Please select file', default_path=os.path.join(os.getcwd(), 'watermark.pdf'))
-            window['-watermark-input-'].update(values['-watermark-file-'])
+                # threading.Thread(target=convert_batch, args=([window,values, inputf, outputf, watermarked]), daemon=True).start()
             
         elif event == '-watermark-':
             watermarked = not watermarked
@@ -213,8 +192,8 @@ def main():
         if event in ('Exit', sg.WINDOW_CLOSE_ATTEMPTED_EVENT):
             ## Save some settings for persistance on next run
             sg.user_settings_set_entry('-location-', window.current_location())  # The line of code to save the position before exiting
-            sg.user_settings_set_entry('-dir_input-', inputf)
-            sg.user_settings_set_entry('-dir_output-', outputf)
+            sg.user_settings_set_entry('-dir_input-', values['-batch-input-'])
+            sg.user_settings_set_entry('-dir_output-', values['-batch-output-'])
             break
         
         
