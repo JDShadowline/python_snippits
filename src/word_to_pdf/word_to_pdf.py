@@ -87,7 +87,8 @@ def main_window(theme):
 #####################
 
 def convert_batch(window,values, input_path, output_path, watermark):
-
+    window['-batch-'].update('') ## Clear output
+    docxfiles, pdffiles, outputfiles, existingfiles = check_folders(window, values, input_path, output_path)
         
     if len(docxfiles) > 0:
         for file in docxfiles:
@@ -112,6 +113,7 @@ def check_folders(window, values, input_path=None, output_path=None):
     pdffiles        = []
     allfiles        = []
     outputfiles     = []
+    existing_files  = []
     if input_path and output_path:
         for file in pathlib.Path(input_path).glob(f'**/*.docx'):
             docxfiles.append(file)
@@ -126,7 +128,7 @@ def check_folders(window, values, input_path=None, output_path=None):
         for file in pathlib.Path(output_path).glob(f'**/*.*'):
             outputfiles.append(file.stem)
     
-        existing_files = []
+        
         for file in allfiles:
             if file.stem in outputfiles:
                 existing_files.append(file.stem)
