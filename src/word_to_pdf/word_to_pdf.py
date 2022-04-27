@@ -11,21 +11,21 @@
 #################
 # Imports
 #####################
+from cgitb import enable
 from genericpath import isdir
-import lovely_logger as log
-import tkinter as tk
 from fpdf import FPDF
 from pdfrw import PageMerge, PdfReader, PdfWriter
-# from tkinter.dialog import Dialog
-import tkinter.filedialog as tk_FileDialog
-import tkinter.font as tk_Font
 from docx2pdf import convert
 import re, os, pathlib
 from datetime import datetime
-import easygui as eg
+
 import win32com.client
 from alive_progress import alive_it
 from PyPDF4 import PdfFileWriter, PdfFileReader
+
+import easygui as eg
+import PySimpleGUI as sg
+import threading
 
 #################
 # Global Variables
@@ -34,63 +34,164 @@ try:
     home_path = pathlib.Path(__file__).parent.resolve() # get script path
 except:
     home_path = pathlib.Path().resolve() # fallback to current dir
-    
+
+#################
+# Set default watermark file
+# This assumes the watermark.pdf file is in the same directory as the script
+# This also returns a pathlib object for the watermark file
 watermark_file = "watermark.pdf"
+default_watermark_path = pathlib.Path(os.path.join(home_path, watermark_file))
+if os.path.exists(default_watermark_path):
+    watermark_file = default_watermark_path.name
+#################
+# GUI/Layout
+#####################
+def main_window(theme):
+    sg.theme(theme)
+    layout = []
+
+    page_main = [
+        [sg.Text('Main')],
+        
+        ]
+    page_batch = [
+        [sg.Text('Batch')],
+        [sg.Multiline(autoscroll=True,size=(80,20), key='-batch-', expand_x=True, auto_refresh=True,write_only=True)],
+        [sg.Text('Input:',size=(10,1)),sg.Input(key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-input-browse-', size=(10,1))],
+        [sg.Text('Output:',size=(10,1)),sg.Input(key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-output-browse-', size=(10,1))],
+        [sg.Checkbox('Watermark', key='-watermark-', enable_events=True, size=(10,1)), sg.Input(default_text=watermark_file,key='-watermark-input-',disabled=True,disabled_readonly_background_color = 'dim gray', size=(60,1),expand_x=True), sg.Button('Browse', key='-watermark-browse-',disabled=True, size=(10,1))],
+        [sg.Text('')],
+        [sg.Button('Start Batch', size=(10,2), key='-batch-start-',bind_return_key=True, expand_x=True)],
+
+        ]
+    page_single = [
+        [sg.Text('Single')],
+       
+        ]
+
+    layout += [
+        [sg.TabGroup([[sg.Tab('Home', page_main),sg.Tab('Batch Process', page_batch), sg.Tab('Single File', page_single)]], enable_events=False, key='-tab-group-')],
+        [sg.StatusBar(text='', key='-status-', size=(80,1), text_color='white', background_color='grey13', relief=sg.RELIEF_SUNKEN, expand_x=True, justification='center')],
+        ]
+    window = sg.Window('DOCX to PDF file converter', layout, grab_anywhere=False, resizable=True, margins=(0, 0), use_custom_titlebar=True, finalize=True, keep_on_top=False,
+                        enable_close_attempted_event=True, 
+                        # location=sg.user_settings_get_entry('-location-', (None, None))  # This is reading the saved location from the user settings file
+                       )
+    window.set_min_size(window.size)
+    return window
+
+
+
 #################
 # Classes/Functions
 #####################
-def gui():
-    choice = eg.buttonbox(msg='Convert .DOCX (Word) to .PDF (Adobe)', choices=['Single File','Folder/Batch','Cancel'])
-    if choice == 'Single File':
-        input_path = File_Helper.file_openbox(title="Please select .DOCX file")
-        output_path = File_Helper.file_savebox(title="Please select name and directory for .pdf file.", filetypes=[("PDF files", ".pdf")])
-        return convert(input_path, output_path)
-    elif choice == 'Folder/Batch':
-        input_path = File_Helper.dir_openbox(title="Please select input directory for .docx files")
-        output_path = File_Helper.dir_openbox(title="Please select save directory for .pdf files")
-        return convert(input_path, output_path)
-    elif choice == 'Cancel':
-        pass
-    else:
-        log.e('Nothing selected')
 
+def convert_batch(window,values, input_path, output_path, watermark):
 
-def docx_to_pdf_dir():
-    input_path = File_Helper.dir_openbox(title="Please select directory for .docx files")
-    output_path = File_Helper.dir_openbox(title="Please select directory for .pdf files")
-    print(input_path, output_path)
-    # convert(input_path, output_path)
-    
-def pdf_watermark(input_files, output_path):
-    for file in alive_it(input_files):
         
-        # print(file, pathfile.name, pathfile.stem)
-        if file.endswith('.pdf'):
-            watermarker(file, output_path)
-            # print('File is pdf')
+    if len(docxfiles) > 0:
+        for file in docxfiles:
+            if file.name not in outputfiles: # if the file is not in the output directory
+                convert(file, output_path)
+                if watermark:
+                    outfile = os.path.join(output_path, file.name.replace('.docx','.pdf'))
+                    watermarker(window, values, outfile, output_path)
+                window['-batch-'].update('Converted '+file.name+' to PDF\n', append=True)
+    if len(pdffiles) > 0:
+        if not watermark:
+            sg.popup('PDF files selected without watermark option. Please select watermark option.')
+        else:
+            for file in pdffiles:
+                if file.name not in outputfiles: # if the file is not in the output directory
+                    outfile = os.path.join(output_path, file.name.replace('.pdf','.pdf'))
+                    watermarker(window, values, outfile, output_path)
+                    window['-batch-'].update('Watermarked '+file.name+'\n', append=True)
+
+def check_folders(window, values, input_path=None, output_path=None):
+    docxfiles       = []
+    pdffiles        = []
+    allfiles        = []
+    outputfiles     = []
+    if input_path and output_path:
+        for file in pathlib.Path(input_path).glob(f'**/*.docx'):
+            docxfiles.append(file)
+            allfiles.append(file)
+            window['-batch-'].update('Found DOCX file: '+file.name+'\n', append=True)
+        for file in pathlib.Path(input_path).glob(f'**/*.pdf'):
+            pdffiles.append(file)
+            allfiles.append(file)
+            window['-batch-'].update('Found PDF file: '+file.name+'\n', append=True)
+        window['-batch-'].update(f"DOCX files: {len(docxfiles)}, PDF files: {len(pdffiles)}\n", append=True)
+        
+        for file in pathlib.Path(output_path).glob(f'**/*.*'):
+            outputfiles.append(file.stem)
+    
+        existing_files = []
+        for file in allfiles:
+            if file.stem in outputfiles:
+                existing_files.append(file.stem)
+        window['-batch-'].update(f"The following files already exist in the output directory\n{existing_files}\n", append=True)
+    
+    return docxfiles, pdffiles, outputfiles
+        
+        
+    # convert(input_path, output_path)
+
+
+# def gui():
+#     choice = eg.buttonbox(msg='Convert .DOCX (Word) to .PDF (Adobe)', choices=['Single File','Folder/Batch','Cancel'])
+#     choice = sg.popup
+#     if choice == 'Single File':
+#         input_path = File_Helper.file_openbox(title="Please select .DOCX file")
+#         output_path = File_Helper.file_savebox(title="Please select name and directory for .pdf file.", filetypes=[("PDF files", ".pdf")])
+#         return convert(input_path, output_path)
+#     elif choice == 'Folder/Batch':
+#         input_path = File_Helper.dir_openbox(title="Please select input directory for .docx files")
+#         output_path = File_Helper.dir_openbox(title="Please select save directory for .pdf files")
+#         return convert(input_path, output_path)
+#     elif choice == 'Cancel':
+#         pass
+#     else:
+#         print('Nothing selected')
+
+
+# def docx_to_pdf_dir():
+#     input_path = File_Helper.dir_openbox(title="Please select directory for .docx files")
+#     output_path = File_Helper.dir_openbox(title="Please select directory for .pdf files")
+#     print(input_path, output_path)
+#     # convert(input_path, output_path)
+    
+# def pdf_watermark(input_files, output_path):
+#     for file in alive_it(input_files):
+        
+#         # print(file, pathfile.name, pathfile.stem)
+#         if file.endswith('.pdf'):
+#             watermarker(file, output_path)
+#             # print('File is pdf')
             
-            # with open(file, "rb") as input_file:
-            #     pdf = PdfFileReader(input_file)
-            # with open(watermark_file, "rb") as watermark:
-            #     watermark_instance = PdfFileReader(watermark_file)
-            #     watermark_page = watermark_instance.getPage(0) #fetch only first page
-            #     pdf_reader = PdfFileReader(file)
-            #     pdf_writer = PdfFileWriter()
-            #     pdf_writer.removeLinks()
-            #     for page in range(pdf_reader.getNumPages()): ## Iterate through the pages and merge the watermark in.
-            #         page = pdf_reader.getPage(page)
-            #         page.mergePage(watermark_page)
-            #         pdf_writer.addPage(page)
-            #     outfile = os.path.join(output_path, pathfile.name)
-            #     with open(outfile, 'wb') as out:
-            #         pdf_writer.write(out)
+#             # with open(file, "rb") as input_file:
+#             #     pdf = PdfFileReader(input_file)
+#             # with open(watermark_file, "rb") as watermark:
+#             #     watermark_instance = PdfFileReader(watermark_file)
+#             #     watermark_page = watermark_instance.getPage(0) #fetch only first page
+#             #     pdf_reader = PdfFileReader(file)
+#             #     pdf_writer = PdfFileWriter()
+#             #     pdf_writer.removeLinks()
+#             #     for page in range(pdf_reader.getNumPages()): ## Iterate through the pages and merge the watermark in.
+#             #         page = pdf_reader.getPage(page)
+#             #         page.mergePage(watermark_page)
+#             #         pdf_writer.addPage(page)
+#             #     outfile = os.path.join(output_path, pathfile.name)
+#             #     with open(outfile, 'wb') as out:
+#             #         pdf_writer.write(out)
 
 
             
-def watermarker(file_path, output_path):
+def watermarker(window, values, file_path, output_path):
     pathfile = pathlib.Path(file_path).resolve()
+    print(pathfile.name, pathfile.stem, pathfile)
     base_pdf = PdfReader(file_path)
-    watermark_pdf = PdfReader(watermark_file)
+    watermark_pdf = PdfReader(values['-watermark-file-'])
     mark = watermark_pdf.pages[0]
     
     for page in range(len(base_pdf.pages)):
@@ -100,94 +201,6 @@ def watermarker(file_path, output_path):
     writer = PdfWriter()
     outfile = os.path.join(output_path, pathfile.name)
     writer.write(outfile, base_pdf)
-            
-    
-class File_Helper():
-    
-    def dir_openbox(title=None, default=None):
-        localRoot = tk.Tk()
-        localRoot.withdraw()
-        localRoot.lift()
-        localRoot.attributes('-topmost', 1)
-        localRoot.attributes('-topmost', 0)
-        if not default:
-            default = home_path
-        if not title:
-            title = "Select Folder"
-        localRoot.update()
-        f = tk_FileDialog.askdirectory(
-            parent=localRoot, title=title, initialdir=default, initialfile=None
-        )
-        localRoot.destroy()
-        if not f:
-            return None
-        return os.path.normpath(f)
-
-    def file_openbox(title=None, default=None):
-        localRoot = tk.Tk()
-        localRoot.withdraw()
-        localRoot.lift()
-        localRoot.attributes('-topmost', 1)
-        localRoot.attributes('-topmost', 0)
-        if not default:
-            default = home_path
-        if not title:
-            title = "Select File"
-        localRoot.update()
-        f = tk_FileDialog.askopenfilename(
-            parent=localRoot, title=title, initialdir=default, initialfile=None
-        )
-        localRoot.destroy()
-        if not f:
-            return None
-        return f
-    
-    def file_multi_openbox(title=None, default=None):
-        '''Returns a list of files'''
-        localRoot = tk.Tk()
-        localRoot.withdraw()
-        localRoot.lift()
-        localRoot.attributes('-topmost', 1)
-        localRoot.attributes('-topmost', 0)
-        if not default:
-            default = home_path
-        if not title:
-            title = "Select File"
-        localRoot.update()
-        f = tk_FileDialog.askopenfilenames(
-            parent=localRoot, title=title, initialdir=default, initialfile=None
-        )
-        localRoot.destroy()
-        if not f:
-            return None
-        return f
-    
-    def file_savebox(title=None, default=None, filetypes=None):
-        localRoot = tk.Tk()
-        localRoot.withdraw()
-        localRoot.lift()
-        localRoot.attributes('-topmost', 1)
-        localRoot.attributes('-topmost', 0)
-        if not filetypes:
-            filetypes = (("CSV Files",".csv"),("Excel files", ".xlsx .xls"), ("PDF files", ".pdf"))
-        if not default:
-            default = home_path
-        if not title:
-            title = "Select File"
-        localRoot.update()
-        f = tk_FileDialog.asksaveasfilename(
-            parent=localRoot, title=title, initialdir=default, filetypes=filetypes
-        )
-        localRoot.destroy()
-        if not f:
-            return None
-        return f
-    
-    
-    
-
-
-
 
 #################
 # Loose Code
@@ -196,8 +209,69 @@ class File_Helper():
 #################
 # App
 #####################
+def main():
+    window = main_window(sg.theme()) ## Create the main window and set the theme externally
+    watermarked = False ## Boolean to check if watermark has been applied
+    inputf=''
+    outputf=''
+    watermarkf = ''
+    
+
+    while True:
+        event, values = window.read(timeout=100)
+        
+        if event == '-batch-start-':
+            if not inputf or not outputf:
+                sg.popup('Please select input and output folders')
+            else:
+                print('batch start')
+                # convert_batch(window,values, inputf, outputf, watermarked)
+                threading.Thread(target=convert_batch, args=([window,values, inputf, outputf, watermarked]), daemon=True).start()
+            # window['-batch-'].update('String'+'\n', append=True)  #values['word']
+        elif event == '-batch-input-browse-':
+            print('batch browse')
+            inputf = values['-batch-in-folder-'] = sg.popup_get_folder('Please select folder')
+            window['-batch-input-'].update(values['-batch-in-folder-'])
+            threading.Thread(target=check_folders, args=(window, values, inputf, outputf), daemon=True).start()
+            
+        elif event == '-batch-output-browse-':
+            print('batch browse')
+            outputf = values['-batch-out-folder-'] = sg.popup_get_folder('Please select folder')
+            window['-batch-output-'].update(values['-batch-out-folder-'])
+            threading.Thread(target=check_folders, args=(window, values, inputf, outputf), daemon=True).start()
+            
+        elif event == '-watermark-browse-':
+            print('watermark browse')
+            watermarkf = values['-watermark-file-'] = sg.popup_get_file('Please select file', default_path=os.path.join(os.getcwd(), 'watermark.pdf'))
+            window['-watermark-input-'].update(values['-watermark-file-'])
+            
+        elif event == '-watermark-':
+            watermarked = not watermarked
+            window['-watermark-input-'].update(disabled= not watermarked)
+            window['-watermark-browse-'].update(disabled= not watermarked)
+            
+        if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
+            # sg.cprint_set_output_destination(window, "-status-")
+            # sg.cprint(f"============ Event = {event} ==============",text_color = 'red',key='-status-') # ,sep = " \n"
+            window['-status-'].update(f"== Event = {event} ==", text_color = 'red')
+            
+            print('============ Event = ', event, ' ==============')
+            print('-------- Values Dictionary (key=value) --------')
+            for key in values:
+                print(key, ' = ',values[key])
+                
+        if event in ('Exit', sg.WINDOW_CLOSE_ATTEMPTED_EVENT):
+            sg.user_settings_set_entry('-location-', window.current_location())  # The line of code to save the position before exiting
+            break
+        
+        
+    window.close() # Gracefully close out the window and exit
+    exit(0)
+
 if __name__ == '__main__':
-    input_files = File_Helper.file_multi_openbox()
-    output_path = File_Helper.dir_openbox()
-    pdf_watermark(input_files, output_path)
+    sg.theme('Dark Grey 13')
+    main()
+    # input_files = File_Helper.file_multi_openbox()
+    # output_path = File_Helper.dir_openbox()
+    # pdf_watermark(input_files, output_path)
     # gui()
