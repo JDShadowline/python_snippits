@@ -57,8 +57,8 @@ def main_window(theme):
     page_batch = [
         [sg.Text('Batch')],
         [sg.Multiline(autoscroll=True,size=(80,20), key='-batch-', expand_x=True, auto_refresh=True,write_only=True)],
-        [sg.Text('Input:',size=(10,1)),sg.Input(key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-input-browse-', size=(10,1))],
-        [sg.Text('Output:',size=(10,1)),sg.Input(key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-output-browse-', size=(10,1))],
+        [sg.Text('Input:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_input-', ''),key='-batch-input-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-input-browse-', size=(10,1))],
+        [sg.Text('Output:',size=(10,1)),sg.Input(default_text=sg.user_settings_get_entry('-dir_output-', ''), key='-batch-output-', text_color='grey14', readonly=True, size=(60,1), expand_x=True),sg.Button('Browse', key='-batch-output-browse-', size=(10,1))],
         [sg.Checkbox('Watermark', key='-watermark-', enable_events=True, size=(10,1)), sg.Input(default_text=watermark_file,key='-watermark-input-',disabled=True,disabled_readonly_background_color = 'dim gray', size=(60,1),expand_x=True), sg.Button('Browse', key='-watermark-browse-',disabled=True, size=(10,1))],
         [sg.Text('')],
         [sg.Button('Start Batch', size=(10,2), key='-batch-start-',bind_return_key=True, expand_x=True)],
@@ -132,60 +132,8 @@ def check_folders(window, values, input_path=None, output_path=None):
                 existing_files.append(file.stem)
         window['-batch-'].update(f"The following files already exist in the output directory\n{existing_files}\n", append=True)
     
-    return docxfiles, pdffiles, outputfiles
+    return docxfiles, pdffiles, outputfiles, existingfiles
         
-        
-    # convert(input_path, output_path)
-
-
-# def gui():
-#     choice = eg.buttonbox(msg='Convert .DOCX (Word) to .PDF (Adobe)', choices=['Single File','Folder/Batch','Cancel'])
-#     choice = sg.popup
-#     if choice == 'Single File':
-#         input_path = File_Helper.file_openbox(title="Please select .DOCX file")
-#         output_path = File_Helper.file_savebox(title="Please select name and directory for .pdf file.", filetypes=[("PDF files", ".pdf")])
-#         return convert(input_path, output_path)
-#     elif choice == 'Folder/Batch':
-#         input_path = File_Helper.dir_openbox(title="Please select input directory for .docx files")
-#         output_path = File_Helper.dir_openbox(title="Please select save directory for .pdf files")
-#         return convert(input_path, output_path)
-#     elif choice == 'Cancel':
-#         pass
-#     else:
-#         print('Nothing selected')
-
-
-# def docx_to_pdf_dir():
-#     input_path = File_Helper.dir_openbox(title="Please select directory for .docx files")
-#     output_path = File_Helper.dir_openbox(title="Please select directory for .pdf files")
-#     print(input_path, output_path)
-#     # convert(input_path, output_path)
-    
-# def pdf_watermark(input_files, output_path):
-#     for file in alive_it(input_files):
-        
-#         # print(file, pathfile.name, pathfile.stem)
-#         if file.endswith('.pdf'):
-#             watermarker(file, output_path)
-#             # print('File is pdf')
-            
-#             # with open(file, "rb") as input_file:
-#             #     pdf = PdfFileReader(input_file)
-#             # with open(watermark_file, "rb") as watermark:
-#             #     watermark_instance = PdfFileReader(watermark_file)
-#             #     watermark_page = watermark_instance.getPage(0) #fetch only first page
-#             #     pdf_reader = PdfFileReader(file)
-#             #     pdf_writer = PdfFileWriter()
-#             #     pdf_writer.removeLinks()
-#             #     for page in range(pdf_reader.getNumPages()): ## Iterate through the pages and merge the watermark in.
-#             #         page = pdf_reader.getPage(page)
-#             #         page.mergePage(watermark_page)
-#             #         pdf_writer.addPage(page)
-#             #     outfile = os.path.join(output_path, pathfile.name)
-#             #     with open(outfile, 'wb') as out:
-#             #         pdf_writer.write(out)
-
-
             
 def watermarker(window, values, file_path, output_path):
     pathfile = pathlib.Path(file_path).resolve()
@@ -261,7 +209,10 @@ def main():
                 print(key, ' = ',values[key])
                 
         if event in ('Exit', sg.WINDOW_CLOSE_ATTEMPTED_EVENT):
+            ## Save some settings for persistance on next run
             sg.user_settings_set_entry('-location-', window.current_location())  # The line of code to save the position before exiting
+            sg.user_settings_set_entry('-dir_input-', inputf)
+            sg.user_settings_set_entry('-dir_output-', outputf)
             break
         
         
