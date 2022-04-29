@@ -1,5 +1,6 @@
 # local files
 config.json
+testcode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
