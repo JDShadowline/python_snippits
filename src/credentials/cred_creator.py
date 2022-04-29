@@ -1,6 +1,6 @@
-#Cred_creator.py
+#Cred_creator_gui.py
 ###### DESCRIPTION ######
-## Creates a credential file.
+## Creates a credential file. Now with a GUI!
 ######
 #
 #
@@ -13,14 +13,14 @@ import ctypes
 import time
 import os
 import sys
-import easygui as eg
+import PySimpleGUI as sg 
+import asyncio, threading
   
-###### CLASSES ######
 class Credentials():
     """Credentials creates a set of single user credentials for the services labeled below.
     """  
     def __init__(self):
-        self.__services = {1:'Service1', 2:'Service2', 3:'Service3'}
+        self.__services = {1:'Test', 2:'WinAir', 3:'MyBoeingFleet'}
         self.__service = ""
         self.__username = ""
         self.__key = ""
@@ -50,7 +50,8 @@ class Credentials():
     def service(self,service):
         # selections = f'{self.__services}'
         while (service == ''):
-            service = eg.enterbox(msg='Enter number of the service, blank is not accepted:')
+            service = sg.popup_get_text('Enter number of the service, blank is not accepted:')
+            # service = eg.enterbox(msg='Enter number of the service, blank is not accepted:')
         self.__service = self.__services.get(service).lower()
    
     @property
@@ -60,7 +61,8 @@ class Credentials():
     @username.setter
     def username(self,username):
         while (username == ''):
-            username = eg.enterbox(msg='Enter a proper User name, blank is not accepted:')
+            username = sg.popup_get_text('Enter username, blank is not accepted:')
+            # username = eg.enterbox(msg='Enter a proper User name, blank is not accepted:')
         self.__username = username
   
     @property
@@ -70,9 +72,11 @@ class Credentials():
     @password.setter
     def password(self,password):
         while (password == ''):
-            password = eg.enterbox(msg='Enter a proper password, blank is not accepted:')
+            # password = eg.enterbox(msg='Enter a proper password, blank is not accepted:')
+            password = sg.popup_get_text('Enter a proper password, blank is not accepted:', password_char="*")
         if len(password) < 8:
-            eg.msgbox(msg='Your password is less than 8 characters long. You should really consider a stronger password')
+            sg.popup_notify('Security Reminder: \nPassword should be at least 8 characters long with mixed case and numbers for better security.')
+            # eg.msgbox(msg='Your password is less than 8 characters long. You should really consider a stronger password')
         self.__key = Fernet.generate_key()
         f = Fernet(self.__key)
         self.__password = f.encrypt(password.encode()).decode()
@@ -134,7 +138,7 @@ class Credentials():
         self.__key = ""
         self.__key_file
   
-###### MAIN ######
+  
 def main():
 
   
@@ -143,11 +147,13 @@ def main():
   
     #Accepting credentials
     # print(creds.services)
-    creds.service = int(eg.enterbox(msg=f"Enter service number:\n{creds.services}"))
-    creds.username = eg.enterbox(msg="Enter User Name:")
-    creds.password = eg.passwordbox(msg="Enter Password:")
+    creds.service = 2  #int(eg.enterbox(msg=f"Enter service number:\n{creds.services}"))
+    creds.username = sg.popup_get_text('Enter username:')
+    # eg.enterbox(msg="Enter User Name:")
+    creds.password = sg.popup_get_text("Enter password:", password_char="*")
+    # eg.passwordbox(msg="Enter Password:")
     # print("Enter the epiry time for key file in minutes, [default:Will never expire]")
-    creds.expiry_time = '-1' #int(eg.enterbox(msg="Enter the epiry time for key file in minutes: [default:Will never expire]") or '-1')
+    creds.expiry_time = '-1' #int(eg.enterbox(msg="Enter the expiry time for key file in minutes: [default:Will never expire]") or '-1')
   
     #calling the Credit
     creds.create_cred()
