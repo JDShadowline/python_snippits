@@ -13,14 +13,13 @@
 #####################
 from cgitb import enable
 from genericpath import isdir
-from fpdf import FPDF
+# from fpdf import FPDF
 from pdfrw import PageMerge, PdfReader, PdfWriter
 from docx2pdf import convert
 import re, os, pathlib
 from datetime import datetime
 
 import win32com.client
-from alive_progress import alive_it
 from PyPDF4 import PdfFileWriter, PdfFileReader
 
 import easygui as eg
@@ -30,7 +29,7 @@ import threading
 import pythoncom # For COM threading fix
 
 #################
-# Global Variables
+# Variables
 #####################
 try:
     home_path = pathlib.Path(__file__).parent.resolve() # get script path

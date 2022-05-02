@@ -1,4 +1,4 @@
-#Cred_creator_gui.py
+#Cred_creator.py
 ###### DESCRIPTION ######
 ## Creates a credential file. Now with a GUI!
 ######
